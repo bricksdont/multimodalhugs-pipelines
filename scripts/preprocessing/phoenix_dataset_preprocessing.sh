@@ -3,18 +3,22 @@
 # calling script needs to set:
 # $base
 # $dry_run
+# $estimator 
 
 base=$1
 dry_run=$2
+estimator=$3
 
 scripts=$base/scripts
 data=$base/data
 venvs=$base/venvs
 
-poses=$data/poses
-preprocessed=$data/preprocessed
+estimator_data=$data/$estimator
+poses=$estimator_data/poses
+preprocessed=$estimator_data/preprocessed
 
 mkdir -p $data
+mkdir -p $estimator_data
 mkdir -p $poses $preprocessed
 
 # maybe skip
@@ -39,9 +43,9 @@ which python
 echo "activate path:"
 which activate
 
-echo "Executing: source activate $venvs/huggingface"
+echo "Executing: source activate $venvs/$estimator" 
 
-source activate $venvs/huggingface
+source activate $venvs/$estimator 
 
 echo "Python after activating:"
 which python
@@ -54,10 +58,12 @@ else
     dry_run_arg=""
 fi
 
-python $scripts/preprocessing/phoenix_dataset_preprocessing.py \
+python $scripts/preprocessing/phoenix_dataset_manual_preprocessing.py \
+    --estimator $estimator \
     --pose-dir $poses \
     --output-dir $preprocessed \
-    --tfds-data-dir $data/tensorflow_datasets $dry_run_arg
+    --tfds-data-dir $data/tensorflow_datasets \
+    --video-dir $data/phoenix_videos $dry_run_arg
 
 # sizes
 echo "Sizes of preprocessed TSV files:"

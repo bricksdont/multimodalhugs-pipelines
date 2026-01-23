@@ -18,7 +18,6 @@ from sign_language_datasets.datasets.config import SignDatasetConfig
 
 from typing import Iterator, Optional, Dict, List
 
-
 # Parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process and transform a TSV file.")
@@ -26,7 +25,6 @@ def parse_arguments():
     parser.add_argument("--output-dir", type=str, help="Path to the output TSV files.")
     parser.add_argument("--encoder-prompt", type=str, default="__dgs__", help="encoder prompt string.")
     parser.add_argument("--decoder-prompt", type=str, default="__de__", help="decoder prompt string.")
-
     parser.add_argument("--tfds-data-dir", type=str, default=None,
                         help="TFDS data folder to cache downloads.", required=False)
     parser.add_argument("--dry-run", action="store_true", default=False,
@@ -71,7 +69,7 @@ def load_dataset(data_dir: Optional[str] = None):
 
 
 Example = Dict[str, str]
-
+   
 
 def generate_examples(dataset: tf.data.Dataset,
                       split_name: str,

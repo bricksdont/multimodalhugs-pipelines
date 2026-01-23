@@ -7,13 +7,37 @@ Download the code:
 
 ## Basic setup
 
-Create a venv:
+Create venvs for each estimator:
 
     ./scripts/environment/create_env.sh
 
-Then install required software:
+Then install required software to each venv:
 
     ./scripts/environment/install.sh
+
+
+## Notes on data
+
+Due to the deprecation of `SignDataConfig`, the automatic loading of the Phoenix dataset is currently broken. 
+
+If you have access to /shares/iict-sp2.ebling.cl.uzh/ on the Science-IT cluster, you can download the videos with this script (approx. 50 GB of data):
+
+    cd multimodalhugs-pipelines
+    ./scripts/data-loading/load-data-uzh.sh
+
+If you are not a member of UZH Science IT, you must yourself put the Phoenix dataset .mp4 files in these three folders: 
+
+    /multimodalhugs-pipelines/data/phoenix_videos/validation
+    /multimodalhugs-pipelines/data/phoenix_videos/train
+    /multimodalhugs-pipelines/data/phoenix_videos/test
+
+The three metadata .tsv files must be located at:
+
+    /multimodalhugs-pipelines/data/phoenix_videos/PHOENIX-2014-T.validation.corpus_poses.tsv
+    /multimodalhugs-pipelines/data/phoenix_videos/PHOENIX-2014-T.train.corpus_poses.tsv
+    /multimodalhugs-pipelines/data/phoenix_videos/PHOENIX-2014-T.test.corpus_poses.tsv
+
+Given that the Phoenix dataset is only publicly available in image files, not .mp4, this is a massive burden to the user. Adding a script to download the data and generate the .mp4 files for non-Science IT users is planned for the future. 
 
 ## Run experiments
 
@@ -29,8 +53,9 @@ Then to train a basic model:
 
     ./scripts/running/run_basic.sh
 
-This will first download and prepare the PHOENIX training data,
-and then train a basic MultimodalHugs model. All steps are submitted
+Automatically, pose estimation is set to use mmposewholebody. If you would like to use a different estimator, modify the `estimator` variable in `run_basic.sh`. 
+
+This will train a basic MultimodalHugs model. All steps are submitted
 as SLURM jobs.
 
 If the process is fully reproducible, this should result in a test set BLEU score of `10.691`. This

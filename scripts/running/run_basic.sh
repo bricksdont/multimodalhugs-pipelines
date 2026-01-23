@@ -7,7 +7,10 @@ scripts=$base/scripts
 
 # set to "false" or "true":
 
-dry_run="false"
+dry_run="true"
+
+# set to your desired estimator
+estimator="mmposewholebody" # options: mmposewholebody
 
 model_name="phoenix"
 

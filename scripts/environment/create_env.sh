@@ -15,4 +15,8 @@ mkdir -p $venvs
 
 # venv for HF
 
-conda create -y --prefix $venvs/huggingface python=3.11.13
+conda create -y --prefix $venvs/mediapipe python=3.9
+
+# venv for mmposewholebody
+
+conda create -y --prefix $venvs/mmposewholebody python=3.8

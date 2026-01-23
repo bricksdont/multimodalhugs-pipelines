@@ -3,21 +3,23 @@
 # calling script needs to set:
 # $base
 # $dry_run
+# $estimator
 # $model_name
 
 base=$1
 dry_run=$2
-model_name=$3
+estimator=$3
+model_name=$4
 
 venvs=$base/venvs
 configs=$base/configs
 configs_sub=$configs/$model_name
 
 models=$base/models
-models_sub=$models/$model_name
+models_sub=$models/$model_name/$estimator
 
 translations=$base/translations
-translations_sub=$translations/$model_name
+translations_sub=$translations/$model_name/$estimator
 
 mkdir -p $translations
 mkdir -p $translations_sub
@@ -34,9 +36,9 @@ which python
 echo "activate path:"
 which activate
 
-echo "Executing: source activate $venvs/huggingface"
+echo "Executing: source activate $venvs/$estimator"
 
-source activate $venvs/huggingface
+source activate $venvs/$estimator
 
 echo "Python after activating:"
 which python
