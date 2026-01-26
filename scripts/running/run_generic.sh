@@ -48,11 +48,13 @@ log_vars base dry_run model_name learning_rate gradient_accumulation_steps warmu
     label_smoothing_factor dataloader_num_workers fp16 seed gpu_type
 
 echo "##############################################" | tee -a $logs_sub/MAIN
+echo "Using estimator: $estimator"
 
 # SLURM job args
 gpu_parameters="--gpus=1 --partition=lowprio"
 
 DRY_RUN_PREPROCESS_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=16G" # GPU processing is required for pose estimation, even in a dry run
+DRY_RUN_TRAINING_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=32G" # got OOM with 16G (try removing GPU to see if this still runs)
 DRY_RUN_GENERIC_SLURM_ARGS="--cpus-per-task=2 --time=02:00:00 --mem=16G"
 
 SLURM_ARGS_PREPROCESS="--time=24:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G"
@@ -62,7 +64,7 @@ SLURM_ARGS_EVALUATE="--time=01:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G
 
 if [[ $dry_run == "true" ]]; then
   SLURM_ARGS_PREPROCESS=$DRY_RUN_PREPROCESS_SLURM_ARGS # preprocessing with mmpose still currently requires GPU (fix to come)
-  SLURM_ARGS_TRAIN=$DRY_RUN_GENERIC_SLURM_ARGS
+  SLURM_ARGS_TRAIN=$DRY_RUN_TRAINING_SLURM_ARGS
   SLURM_ARGS_TRANSLATE=$DRY_RUN_GENERIC_SLURM_ARGS
   SLURM_ARGS_EVALUATE=$DRY_RUN_GENERIC_SLURM_ARGS
 fi
@@ -78,7 +80,6 @@ id_preprocess=$(
 )
 
 echo "  id_preprocess: $id_preprocess | $logs_sub/slurm-$id_preprocess.out" | tee -a $logs_sub/MAIN
-echo " using estimator: $estimator"
 
 # HF train (depends on preprocess)
 

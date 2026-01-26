@@ -103,14 +103,30 @@ else
     fp16_arg=""
 fi
 
+if [[ "$estimator" == "holistic" ]]; then
+    reduce_holistic_pose_arg="--reduce_holistic_pose_arg"
+else
+    reduce_holistic_pose_arg=""
+fi
+
+if [[ "$estimator" == "holistic" ]]; then
+    feat_dim=534
+elif [[ "$estimator" == "mmposewholebody" ]]; then
+
+    feat_dim=266
+else
+    echo "WARNING: Unknown estimator: $estimator. Defaulting to feat_dim=534"
+    feat_dim=534
+fi
 
 python $scripts/training/create_config.py \
-    --run-name "phoenix-$estimator" \
+    --run-name "phoenix_$estimator" \
     --config-dir $configs_sub \
     --train-metadata-file $preprocessed/rwth_phoenix2014_t.train.tsv \
     --validation-metadata-file $preprocessed/rwth_phoenix2014_t.validation.tsv \
     --test-metadata-file $preprocessed/rwth_phoenix2014_t.test.tsv \
     --new-vocabulary "__dgs__" \
+    --feat-dim $feat_dim \
     --learning-rate $learning_rate \
     --gradient-accumulation-steps $gradient_accumulation_steps \
     --warmup-steps $warmup_steps \
@@ -118,7 +134,7 @@ python $scripts/training/create_config.py \
     --label-smoothing-factor $label_smoothing_factor \
     --dataloader-num-workers $dataloader_num_workers \
     --seed $seed \
-    --reduce-holistic-poses $dry_run_arg $fp16_arg
+    $reduce_holistic_pose_arg $dry_run_arg $fp16_arg
 
 # https://github.com/GerrySant/multimodalhugs/issues/50
 

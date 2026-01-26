@@ -13,7 +13,7 @@ model_name=$4
 
 venvs=$base/venvs
 configs=$base/configs
-configs_sub=$configs/$model_name
+configs_sub=$configs/$model_name/$estimator
 
 models=$base/models
 models_sub=$models/$model_name/$estimator
@@ -75,7 +75,7 @@ fi
 
 multimodalhugs-generate \
     --task "translation" \
-    --config_path $configs_sub/config_phoenix.yaml \
+    --config_path $configs_sub/config_phoenix_$estimator.yaml \
     --metric_name "sacrebleu" \
     --generate_output_dir $translations_sub \
     --setup_path $models_sub/setup \

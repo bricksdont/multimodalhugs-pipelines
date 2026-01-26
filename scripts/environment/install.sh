@@ -65,8 +65,10 @@ mkdir -p $tools
 # install fork of pose-format that extends to mmposewholebody
 
 pip uninstall -y pose-format
-git clone -b new_estimators https://github.com/catherine-o-brien/pose.git $tools/pose
-cd $tools/pose/src/python
+git clone https://github.com/catherine-o-brien/pose.git "$tools/pose" && \
+cd "$tools/pose" && \
+git checkout temp || git checkout new-estimators # once I merge the temp branch into the new-estimators branch, can revert to: git clone -b temp https://github.com/catherine-o-brien/pose.git $tools/pose 
+cd /src/python
 pip install -e .
 
 # install dependencies for mmposewholebody

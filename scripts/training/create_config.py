@@ -16,7 +16,7 @@ model:
   multimodal_mapper_dropout: 0.1                  # Dropout probability for the Multimodal Mapper to prevent overfitting.
   backbone_type: {backbone_type}                  # Identifier for the pretrained backbone (e.g., "m2m_100").
   pretrained_backbone: {pretrained_backbone}      # Weights or checkpoint identifier for the pretrained backbone.
-  feat_dim: 534                                   # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
+  feat_dim: {feat_dim}                            # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
 
 training:
   run_name: {run_name}                             # The name or identifier of the model configuration.
@@ -57,7 +57,7 @@ data:
   max_frames: 300                                                                                                               # Maximum number of frames to consider in video samples; samples exceeding this are filtered.
 
 processor:
-  reduce_holistic_poses: {reduce_holistic_poses}   # reduce the face mesh points of Mediapipe holistic poses (leading to fewer dimensions overall)
+  reduce_holistic_pose: {reduce_holistic_pose}   # reduce the face mesh points of Mediapipe holistic poses (leading to fewer dimensions overall)
   text_tokenizer_path: {text_tokenizer_path}       # Path or identifier for the pretrained text tokenizer (e.g., "facebook/m2m100_418M").
   new_vocabulary: {new_vocabulary}                 # Comma-separated list of new tokens that will be added to the tokenizer. It can also be a Path to the file containing the new tokens that will be added to the tokenizer.
 """
@@ -90,7 +90,8 @@ def fill_template(args: argparse.Namespace) -> str:
         test_metadata_file=args.test_metadata_file,
         backbone_type=args.backbone_type,
         pretrained_backbone=args.pretrained_backbone,
-        reduce_holistic_poses=args.reduce_holistic_poses,
+        feat_dim=args.feat_dim,
+        reduce_holistic_pose=args.reduce_holistic_pose,
         max_steps=max_steps,
         text_tokenizer_path=args.text_tokenizer_path,
         new_vocabulary=args.new_vocabulary,
@@ -125,9 +126,11 @@ def parse_arguments():
     parser.add_argument("--pretrained-backbone", type=str, help="Weights or checkpoint identifier for the pretrained "
                                                                 "backbone. (default: facebook/m2m100_418M).",
                         default="facebook/m2m100_418M", required=False)
-
-    parser.add_argument("--reduce-holistic-poses", action="store_true", default=False,
-                        help="Reduce holistic poses (default: False).", required=False)
+    parser.add_argument("--feat-dim", type=int, help="Dimension of the Feature Extractor output (default: 534).",
+                        default=534, required=False) 
+    
+    parser.add_argument("--reduce-holistic-pose", action="store_true", default=False,
+                        help="Reduce holistic pose (default: False).", required=False)
 
     parser.add_argument("--learning-rate", type=float, help="The initial learning rate for AdamW optimizer (default: 5e-05).",
                         default=5e-05, required=False)
@@ -172,6 +175,7 @@ def main():
     with open(config_path, "w") as outhandle:
         outhandle.write(filled_template)
 
+    print(filled_template)
 
 if __name__ == "__main__":
     main()
