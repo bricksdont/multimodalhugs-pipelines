@@ -10,7 +10,7 @@ scripts=$base/scripts
 dry_run="true"
 
 # set to your desired estimator
-estimator="mmposewholebody" # options: mmposewholebody
+estimator="mmposewholebody" # options: mmposewholebody, mediapipe
 
 model_name="phoenix"
 

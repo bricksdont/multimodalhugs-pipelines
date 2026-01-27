@@ -103,13 +103,13 @@ else
     fp16_arg=""
 fi
 
-if [[ "$estimator" == "holistic" ]]; then
+if [[ "$estimator" == "mediapipe" ]]; then
     reduce_holistic_pose_arg="--reduce_holistic_pose_arg"
 else
     reduce_holistic_pose_arg=""
 fi
 
-if [[ "$estimator" == "holistic" ]]; then
+if [[ "$estimator" == "mediapipe" ]]; then
     feat_dim=534
 elif [[ "$estimator" == "mmposewholebody" ]]; then
 

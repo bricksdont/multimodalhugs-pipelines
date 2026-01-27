@@ -9,7 +9,7 @@ base=$scripts/..
 venvs=$base/venvs
 
 ############################
-# mediapipe (py311)
+# mediapipe holistic (py39)
 ############################
 source activate $venvs/mediapipe
 tools=$base/tools/mediapipe
@@ -40,6 +40,8 @@ pip install git+https://github.com/google-research/bleurt.git
 
 # openGL is no longer available on the clusterY
 
+pip install pose-format
+
 OPENCV_VERSION=$(python - <<'EOF'
 import importlib.metadata as m
 try:
@@ -65,10 +67,8 @@ mkdir -p $tools
 # install fork of pose-format that extends to mmposewholebody
 
 pip uninstall -y pose-format
-git clone https://github.com/catherine-o-brien/pose.git "$tools/pose" && \
-cd "$tools/pose" && \
-git checkout temp || git checkout new-estimators # once I merge the temp branch into the new-estimators branch, can revert to: git clone -b temp https://github.com/catherine-o-brien/pose.git $tools/pose 
-cd /src/python
+git clone -b new_estimators https://github.com/catherine-o-brien/pose.git $tools/pose
+cd $tools/pose/src/python
 pip install -e .
 
 # install dependencies for mmposewholebody
@@ -79,7 +79,6 @@ mim install mmengine
 mim install mmcv-full
 mim install "mmdet>=3.1.0"
 mim install mmpose
-pip install opencv-python-headless==4.8.1.78 # temp
 
 # install multimodalhugs
 

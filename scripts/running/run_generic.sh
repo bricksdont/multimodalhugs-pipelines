@@ -52,18 +52,19 @@ echo "Using estimator: $estimator"
 
 # SLURM job args
 gpu_parameters="--gpus=1 --partition=lowprio"
+gpu_parameters_preprocessing="--gpus=8 --partition=lowprio" # pose estimation is very compute intensive
 
-DRY_RUN_PREPROCESS_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=16G" # GPU processing is required for pose estimation, even in a dry run
-DRY_RUN_TRAINING_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=32G" # got OOM with 16G (try removing GPU to see if this still runs)
+DRY_RUN_PREPROCESS_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=16G" 
+DRY_RUN_TRAINING_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=32G" #16G gives OOM
 DRY_RUN_GENERIC_SLURM_ARGS="--cpus-per-task=2 --time=02:00:00 --mem=16G"
 
-SLURM_ARGS_PREPROCESS="--time=24:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G"
-SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G"
+SLURM_ARGS_PREPROCESS="--time=24:00:00 $gpu_parameters_preprocessing --cpus-per-task=8 --mem=16G"
+SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task=8 --mem=32G"
 SLURM_ARGS_TRANSLATE="--time=12:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G"
 SLURM_ARGS_EVALUATE="--time=01:00:00 $gpu_parameters --cpus-per-task=8 --mem=16G"
 
 if [[ $dry_run == "true" ]]; then
-  SLURM_ARGS_PREPROCESS=$DRY_RUN_PREPROCESS_SLURM_ARGS # preprocessing with mmpose still currently requires GPU (fix to come)
+  SLURM_ARGS_PREPROCESS=$DRY_RUN_PREPROCESS_SLURM_ARGS # preprocessing with mmpose still currently requires GPU
   SLURM_ARGS_TRAIN=$DRY_RUN_TRAINING_SLURM_ARGS
   SLURM_ARGS_TRANSLATE=$DRY_RUN_GENERIC_SLURM_ARGS
   SLURM_ARGS_EVALUATE=$DRY_RUN_GENERIC_SLURM_ARGS

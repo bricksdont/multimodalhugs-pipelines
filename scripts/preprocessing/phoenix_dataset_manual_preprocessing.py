@@ -4,6 +4,7 @@ import subprocess
 import argparse
 import logging
 import csv
+import time
 
 from typing import Iterator, Dict, List, Optional
 
@@ -56,7 +57,7 @@ def load_split_metadata(video_dir: str, split_name: str) -> Dict[str, str]:
 def generate_examples(estimator: str,
                       video_dir: str,
                       split_name: str,
-                      pose_dir: str,
+                      split_pose_dir: str,
                       dry_run: bool = False) -> Iterator[Example]:
     """
     :param video_dir: The estimator to use: select from: "mmposewholebody"
@@ -70,7 +71,7 @@ def generate_examples(estimator: str,
     if not os.path.isdir(split_dir):
         raise ValueError(f"Split directory does not exist: {split_dir}")
 
-    os.makedirs(pose_dir, exist_ok=True)
+    os.makedirs(split_pose_dir, exist_ok=True)
 
     video_paths = sorted(glob.glob(os.path.join(split_dir, "*.mp4")))
 
@@ -83,8 +84,9 @@ def generate_examples(estimator: str,
     datum_text_mapping = load_split_metadata(video_dir, split_name)
 
     for video_path in video_paths:
+        tic = time.perf_counter()
         datum_id = os.path.splitext(os.path.basename(video_path))[0]
-        pose_filepath = os.path.join(pose_dir, f"{datum_id}.pose")
+        pose_filepath = os.path.join(split_pose_dir, f"{datum_id}.pose")
 
         # skip if already processed
         if os.path.exists(pose_filepath):
@@ -95,7 +97,7 @@ def generate_examples(estimator: str,
                 "video_to_pose", 
                 "--format", estimator, 
                 "-i", video_path, 
-                "-o", pose_dir,
+                "-o", split_pose_dir,
             ] #TODO: change so that if dry-run is true, we use cpu processing 
             
             if dry_run:
@@ -125,7 +127,7 @@ def generate_examples(estimator: str,
             "text": text,
             "pose_filepath": pose_filepath
         }
-
+        logging.debug(f"Processed video {datum_id} in {time.perf_counter() - tic:.2f} seconds\n")
 
 def write_examples_tsv(examples: List[Example],
                        output_dir: str,
@@ -179,11 +181,16 @@ def main():
     stats = {}
 
     for split_name in ["train", "test", "validation"]:
+
+        split_pose_dir = os.path.join(args.pose_dir, split_name)
+        os.makedirs(split_pose_dir, exist_ok=True)
+
+        logging.debug(f"\n\n\nGenerating examples for split: {split_name}\n")
         
         examples = list(generate_examples(estimator=args.estimator,
                                             video_dir=args.video_dir,
                                             split_name=split_name,
-                                            pose_dir=args.pose_dir,
+                                            split_pose_dir=split_pose_dir,
                                             dry_run=args.dry_run))
         
         print(examples)

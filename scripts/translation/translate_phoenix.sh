@@ -75,7 +75,7 @@ fi
 
 multimodalhugs-generate \
     --task "translation" \
-    --config_path $configs_sub/config_phoenix_$estimator.yaml \
+    --config_path $configs_sub/config-phoenix-$estimator.yaml \
     --metric_name "sacrebleu" \
     --generate_output_dir $translations_sub \
     --setup_path $models_sub/setup \
