@@ -15,7 +15,7 @@ mkdir -p $venvs
 
 # venv for HF
 
-conda create -y --prefix $venvs/mediapipe python=3.9
+conda create -y --prefix $venvs/mediapipe python=3.11
 
 # venv for mmposewholebody
 
