@@ -104,9 +104,9 @@ else
 fi
 
 if [[ "$estimator" == "mediapipe" ]]; then
-    reduce_holistic_pose_arg="--reduce_holistic_pose_arg"
+    reduce_holistic_poses_arg="--reduce-holistic-poses"
 else
-    reduce_holistic_pose_arg=""
+    reduce_holistic_poses_arg=""
 fi
 
 if [[ "$estimator" == "mediapipe" ]]; then
@@ -134,7 +134,7 @@ python $scripts/training/create_config.py \
     --label-smoothing-factor $label_smoothing_factor \
     --dataloader-num-workers $dataloader_num_workers \
     --seed $seed \
-    $reduce_holistic_pose_arg $dry_run_arg $fp16_arg
+    $reduce_holistic_poses_arg $dry_run_arg $fp16_arg
 
 # https://github.com/GerrySant/multimodalhugs/issues/50
 
