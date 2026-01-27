@@ -5,7 +5,7 @@
 : "${base:="/shares/sigma.ebling.cl.uzh/mathmu/multimodalhugs-examples"}"
 : "${dry_run:="false"}"
 : "${model_name:="phoenix"}"
-: "${estimator:="mmposewholebody"}"
+: "${estimator:=""}"
 : "${learning_rate:="5e-05"}"
 : "${gradient_accumulation_steps:=1}"
 : "${warmup_steps:=0}"
@@ -14,6 +14,12 @@
 : "${dataloader_num_workers:=2}"
 : "${fp16:="true"}"
 : "${seed:=42}"
+
+# Check if estimator is set
+if [[ -z "$estimator" ]]; then
+echo "Error: estimator is not set. Please provide a value for 'estimator' in scripts/running/run_basic.sh." >&2
+exit 1
+fi
 
 ################################
 

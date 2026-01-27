@@ -58,7 +58,7 @@ else
     dry_run_arg=""
 fi
 
-python $scripts/preprocessing/phoenix_dataset_manual_preprocessing.py \
+python $scripts/preprocessing/phoenix_dataset_preprocessing.py \
     --estimator $estimator \
     --pose-dir $poses \
     --output-dir $preprocessed \
