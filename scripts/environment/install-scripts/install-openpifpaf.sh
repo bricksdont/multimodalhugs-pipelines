@@ -1,28 +1,24 @@
 #! /bin/bash
 
 ############################
-# mmposewholebody (py38)
+# openpifpaf (py310)
 ############################
+base=$(dirname "$0")/
+environment_scripts=$base/..
+scripts=$environment_scripts/..
+base=$scripts/..
+venvs=$base/venvs
 
-source activate $venvs/mmposewholebody
-tools=$base/tools/mmposewholebody
+source activate $venvs/openpifpaf
+tools=$base/tools/openpifpaf
 mkdir -p $tools
 
-# install fork of pose-format that extends to mmposewholebody
+# install fork of pose-format that extends to openpifpaf
 
 pip uninstall -y pose-format
 git clone -b new_estimators https://github.com/catherine-o-brien/pose.git $tools/pose
 cd $tools/pose/src/python
 pip install -e .
-
-# install dependencies for mmposewholebody
-module load cuda/12.6.3 # required by mmcv-full
-conda install pytorch torchvision 
-pip install openmim
-mim install mmengine
-mim install mmcv-full
-mim install "mmdet>=3.1.0"
-mim install mmpose
 
 # install multimodalhugs
 
@@ -35,15 +31,8 @@ git clone https://github.com/GerrySant/multimodalhugs.git $tools/multimodalhugs
 
 (cd $tools/multimodalhugs && pip install .)
 
-# TF keras, because keras 3 is not supported in Transformers
-
-pip install tf-keras
-
-# bleurt not supported out of the box with evaluate
-
-pip install git+https://github.com/google-research/bleurt.git
-
-# openGL is no longer available on the cluster
+# install openpifpaf
+pip install "openpifpaf==0.13.11" --force-reinstall --no-cache-dir
 
 OPENCV_VERSION=$(python - <<'EOF'
 import importlib.metadata as m
@@ -54,5 +43,9 @@ except m.PackageNotFoundError:
 EOF
 )
 
+pip install tensorflow==2.13.1 mediapipe==0.10.9 protobuf==3.20.3
+
 pip uninstall -y opencv-python opencv-python-headless
 pip install "opencv-python-headless==${OPENCV_VERSION}"
+
+conda deactivate 

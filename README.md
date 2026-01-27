@@ -9,7 +9,7 @@ Download the code:
 
 Create venvs for each estimator:
 
-    ./scripts/environment/create_env.sh
+    ./scripts/environment/create_envs.sh
 
 Then install required software to each venv:
 
@@ -20,7 +20,7 @@ Then install required software to each venv:
 
 Due to the deprecation of `SignDataConfig`, the automatic loading of the Phoenix dataset is currently broken. 
 
-If you have access to /shares/iict-sp2.ebling.cl.uzh/ on the Science-IT cluster, you can download the videos with this script (approx. 50 GB of data):
+If you have access to /shares/iict-sp2.ebling.cl.uzh/ on the UZH Science-IT cluster, you can download the videos with this script (approx. 50 GB of data):
 
     cd multimodalhugs-pipelines
     ./scripts/data-loading/load-data-uzh.sh
@@ -143,3 +143,12 @@ After applying [this fix](https://github.com/GerrySant/multimodalhugs/compare/ma
 | phoenix_3 | 9.982 | 24.2983             |
 
 also, all initial weight parameters are identical between models.
+
+# Adding a new pose estimator
+To add a new pose estimator:
+1. Merge the implementation of your new estimator into the new-estimators branch of `https://github.com/catherine-o-brien/pose.git`
+2. Add a command to create a conda environment for your estimator in the file `/scripts/environment/install.sh`. 
+
+    *Note: the name you give your estimator MUST be the same as its estimator name in the `pose` repo.*
+3. Add an installation script to `/scripts/environment/install-scripts.sh`
+4. After that, set the `estimator` variable in `scripts/running/run_basic.sh` to your estimator, run the repo as normal, making sure to rerun the `./create_envs.sh` and `./install-all.sh` shell scripts. 
