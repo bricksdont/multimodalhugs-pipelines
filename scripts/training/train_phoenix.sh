@@ -120,7 +120,7 @@ else
 fi
 
 python $scripts/training/create_config.py \
-    --run-name "phoenix_$estimator" \
+    --run-name "phoenix-$estimator" \
     --config-dir $configs_sub \
     --train-metadata-file $preprocessed/rwth_phoenix2014_t.train.tsv \
     --validation-metadata-file $preprocessed/rwth_phoenix2014_t.validation.tsv \
@@ -146,7 +146,7 @@ export HF_HOME=$data/$estimator/huggingface
 
 multimodalhugs-setup \
     --modality "pose2text" \
-    --config_path $configs_sub/config_phoenix-$estimator.yaml \
+    --config_path $configs_sub/config-phoenix-$estimator.yaml \
     --output_dir $models_sub \
     --seed $seed
 
@@ -154,7 +154,7 @@ multimodalhugs-setup \
 
 multimodalhugs-train \
     --task "translation" \
-    --config_path $configs_sub/config_phoenix-$estimator.yaml \
+    --config_path $configs_sub/config-phoenix-$estimator.yaml \
     --setup_path $models_sub/setup \
     --output_dir $models_sub \
     --seed $seed \
