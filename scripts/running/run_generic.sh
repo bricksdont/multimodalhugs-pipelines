@@ -50,11 +50,10 @@ log_vars() {
   done
 }
 
-log_vars base dry_run model_name learning_rate gradient_accumulation_steps warmup_steps batch_size \
+log_vars base dry_run model_name estimator learning_rate gradient_accumulation_steps warmup_steps batch_size \
     label_smoothing_factor dataloader_num_workers fp16 seed gpu_type
 
 echo "##############################################" | tee -a $logs_sub/MAIN
-echo "Using estimator: $estimator"
 
 # SLURM job args
 gpu_parameters="--gpus=1 --partition=lowprio"
