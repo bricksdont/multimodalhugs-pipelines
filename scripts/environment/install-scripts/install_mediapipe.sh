@@ -1,28 +1,26 @@
 #! /bin/bash
 
 ############################
-# mmposewholebody (py38)
+# mediapipe holistic (py311)
 ############################
 
-source activate $venvs/mmposewholebody
-tools=$base/tools/mmposewholebody
+module load gpumem32gb cuda/13.0.2 cudnn/9.8.0.87-12 miniforge3
+
+environment_scripts=$(dirname "$0")
+scripts=$environment_scripts/../..
+base=$scripts/..
+
+venvs=$base/venvs
+
+############################
+# mediapipe holistic (py39)
+############################
+source activate $venvs/mediapipe
+tools=$base/tools/mediapipe
 mkdir -p $tools
 
-# install fork of pose-format that extends to mmposewholebody
-
-pip uninstall -y pose-format
-git clone -b new_estimators https://github.com/catherine-o-brien/pose.git $tools/pose
-cd $tools/pose/src/python
-pip install -e .
-
-# install dependencies for mmposewholebody
-module load cuda/12.6.3 # required by mmcv-full
-conda install pytorch torchvision 
-pip install openmim
-mim install mmengine
-mim install mmcv-full
-mim install "mmdet>=3.1.0"
-mim install mmpose
+pip install pose-format
+pip install "mediapipe<0.10.30"
 
 # install multimodalhugs
 
@@ -43,6 +41,8 @@ pip install tf-keras
 
 pip install git+https://github.com/google-research/bleurt.git
 
+pip install astunparse urllib  --force-reinstall --no-cache-dir
+
 # openGL is no longer available on the cluster
 
 OPENCV_VERSION=$(python - <<'EOF'
@@ -54,5 +54,9 @@ except m.PackageNotFoundError:
 EOF
 )
 
+pip install tensorflow==2.13.1 mediapipe==0.10.9 protobuf==3.20.3
+
 pip uninstall -y opencv-python opencv-python-headless
 pip install "opencv-python-headless==${OPENCV_VERSION}"
+
+conda deactivate 

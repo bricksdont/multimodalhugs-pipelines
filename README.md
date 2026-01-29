@@ -53,7 +53,7 @@ Then to train a basic model:
 
     ./scripts/running/run_basic.sh
 
-Automatically, pose estimation is set to use mmposewholebody. If you would like to use a different estimator, modify the `estimator` variable in `run_basic.sh`. 
+Automatically, pose estimation is set to use `mediapipe`. If you would like to use a different estimator, modify the `estimator` variable in `run_basic.sh`. 
 
 This will train a basic MultimodalHugs model. All steps are submitted
 as SLURM jobs.
