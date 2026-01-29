@@ -5,7 +5,7 @@
 : "${base:="/shares/sigma.ebling.cl.uzh/mathmu/multimodalhugs-examples"}"
 : "${dry_run:="false"}"
 : "${model_name:="phoenix"}"
-: "${estimator:=""}"
+: "${estimator:="mediapipe"}"
 : "${learning_rate:="5e-05"}"
 : "${gradient_accumulation_steps:=1}"
 : "${warmup_steps:=0}"
@@ -61,7 +61,16 @@ gpu_parameters_preprocessing="--gpus=8 --partition=lowprio" # pose estimation is
 
 DRY_RUN_PREPROCESS_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=16G" 
 DRY_RUN_TRAINING_SLURM_ARGS="--time=02:00:00 $gpu_parameters --cpus-per-task=2 --mem=32G" #16G gives OOM
-DRY_RUN_GENERIC_SLURM_ARGS="--cpus-per-task=2 --time=02:00:00 --mem=16G"
+DRY_RUN_GENERIC_SLURM_ARGS="--cpus-per-task=2 --time=02:00:00 --mem=16G --partition=lowprio"
+
+if [[ $gpu_type == "v100" ]]; then
+  gpu_parameters="--gpus=V100:1 --partition lowprio"
+elif [[ $gpu_type == "h100" ]]; then
+  gpu_parameters="--gpus=H100:1"
+else
+  # avoid L4 nodes with too little memory
+  gpu_parameters="--gpus=1 --constraint=GPUMEM32GB"
+fi
 
 SLURM_ARGS_PREPROCESS="--time=24:00:00 $gpu_parameters_preprocessing --cpus-per-task=8 --mem=16G"
 SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task=8 --mem=32G"
