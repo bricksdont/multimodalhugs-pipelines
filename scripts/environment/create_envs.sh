@@ -13,6 +13,11 @@ venvs=$base/venvs
 
 mkdir -p $venvs
 
-# venv for HF
+# venv for mediapipe
+conda create -y --prefix $venvs/mediapipe python=3.11
 
-conda create -y --prefix $venvs/huggingface python=3.11.13
+# venv for mmposewholebody
+conda create -y --prefix $venvs/mmposewholebody python=3.8
+
+# venv for openpifpaf
+conda create -y --prefix $venvs/openpifpaf python=3.10.19
