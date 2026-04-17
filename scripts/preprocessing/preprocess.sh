@@ -60,7 +60,7 @@ else
     dry_run_arg=""
 fi
 
-python $scripts/preprocessing/phoenix_dataset_preprocessing.py \
+python $scripts/preprocessing/preprocess.py \
     --dataset $dataset \
     --feature-type $feature_type \
     --pose-type $pose_type \
