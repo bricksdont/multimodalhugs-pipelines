@@ -1,6 +1,6 @@
 # multimodalhugs-pipelines
 
-Experiment management code for training models with [MultimodalHugs](https://github.com/GerrySant/multimodalhugs).
+Experiment management code for training models with [MultimodalHugs](https://github.com/GerrySant/multimodalhugs) (MMH). MMH is an extension of Huggingface offering better support for sign language processing research.
 
 ## Basic setup
 
