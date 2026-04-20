@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 # calling script needs to set:
 # $base
 # $dry_run
