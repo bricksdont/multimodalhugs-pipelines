@@ -1,11 +1,13 @@
 # multimodalhugs-pipelines
 
+Experiment management code for training models with [MultimodalHugs](https://github.com/GerrySant/multimodalhugs).
+
+## Basic setup
+
 Download the code:
 
     git clone https://github.com/bricksdont/multimodalhugs-pipelines
     cd multimodalhugs-pipelines
-
-## Basic setup
 
 Create a venv:
 
