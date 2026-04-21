@@ -35,7 +35,7 @@ This will first download and prepare the PHOENIX training data,
 and then train a basic MultimodalHugs model. All steps are submitted
 as SLURM jobs.
 
-If the process is fully reproducible, this should result in a test set BLEU score of `10.691`. This
+If the process is fully reproducible, this should result in a test set BLEU score of `9.982`. This
 value is inside the file `evaluations/phoenix/test_score.bleu`.
 
 ### Further experiments
