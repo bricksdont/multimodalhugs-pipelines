@@ -21,8 +21,12 @@ gradient_accumulation_steps=3
 
 for pose_type in alphapose_136 mediapipe mmposewholebody openpifpaf openpose sapiens sdpose smplest_x; do
 
-    model_name="o_brien_et_al_2026+pose_type.$pose_type"
+    for seed in 375678 534 42; do
 
-    . $scripts/running/run_generic.sh
+        model_name="o_brien_et_al_2026+pose_type.$pose_type+seed.$seed"
+
+        . $scripts/running/run_generic.sh
+
+    done
 
 done
