@@ -118,7 +118,12 @@ def load_dataset(dataset_name: str = "rwth_phoenix2014_t",
 
 
 def load_text_labels(dataset_name: str, data_dir: Optional[str] = None) -> Dict[str, Dict[str, str]]:
-    """Load text labels from TFDS without downloading pose data."""
+    """Load text labels from TFDS using the holistic pose config.
+
+    include_pose=None triggers a never-cached TFDS config variant which hits a
+    protobuf 4.x incompatibility during builder init. Reusing the holistic config
+    avoids that code path (the cache already exists after mediapipe preprocessing).
+    """
     import tensorflow_datasets as tfds
     from sign_language_datasets.datasets.config import SignDatasetConfig
 
@@ -127,7 +132,7 @@ def load_text_labels(dataset_name: str, data_dir: Optional[str] = None) -> Dict[
                                include_video=False,
                                process_video=False,
                                fps=25,
-                               include_pose=None)
+                               include_pose="holistic")
 
     dataset = tfds.load(dataset_name, builder_kwargs=dict(config=config), data_dir=data_dir)
 
