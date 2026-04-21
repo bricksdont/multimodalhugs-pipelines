@@ -41,10 +41,10 @@ POSE_DOWNLOAD_URLS = {
 EXPECTED_FEAT_DIMS = {
     "mediapipe":       534,   # after reduce_holistic_poses
     "alphapose_136":   272,   # 136 * 2 (XY, 2D)
-    "mmposewholebody": 399,   # 133 * 3 (XYC)
-    "openpifpaf":      399,   # 133 * 3 (XYC)
+    "mmposewholebody": 266,   # 133 * 2 (XY)
+    "openpifpaf":      266,   # 133 * 2 (XY)
     "sdpose":          399,   # 133 * 3 (XYC)
-    "openpose":        411,   # 137 * 3 (XYC)
+    "openpose":        274,   # 137 * 2 (XY)
     "smplest_x":       278,   # 139 * 2 (XY)
     "sapiens":         620,
 }

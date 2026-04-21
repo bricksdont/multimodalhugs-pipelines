@@ -10,9 +10,9 @@ Eight pose estimators are evaluated:
 |---|---|---|---|
 | `alphapose_136` | 136 | XY (2D) | 272 |
 | `mediapipe` | 534 (after reduction) | XYZC | 534 |
-| `mmposewholebody` | 133 | XYC | 399 |
-| `openpifpaf` | 133 | XYC | 399 |
-| `openpose` | 137 | XYC | 411 |
+| `mmposewholebody` | 133 | XY | 266 |
+| `openpifpaf` | 133 | XY | 266 |
+| `openpose` | 137 | XY | 274 |
 | `sapiens` | — | — | 620 |
 | `sdpose` | 133 | XYC | 399 |
 | `smplest_x` | 139 | XY | 278 |
