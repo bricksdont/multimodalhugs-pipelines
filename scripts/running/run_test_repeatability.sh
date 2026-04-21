@@ -21,37 +21,3 @@ for model_name in phoenix_1_fix phoenix_2_fix phoenix_3_fix; do
     . $scripts/running/run_generic.sh
 
 done
-
-exit 0
-
-# one data worker only
-
-dataloader_num_workers=1
-
-for model_name in phoenix_1_workers_1 phoenix_2_workers_1 phoenix_3_workers_1; do
-
-    . $scripts/running/run_generic.sh
-
-done
-
-# no fp16 training
-
-dataloader_num_workers=2
-fp16="false"
-
-for model_name in phoenix_1_fp32 phoenix_2_fp32 phoenix_3_fp32; do
-
-    . $scripts/running/run_generic.sh
-
-done
-
-# no fp16, single data worker
-
-dataloader_num_workers=1
-fp16="false"
-
-for model_name in phoenix_1_fp32_workers_1 phoenix_2_fp32_workers_1 phoenix_3_fp32_workers_1; do
-
-    . $scripts/running/run_generic.sh
-
-done

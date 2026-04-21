@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -euo pipefail
+
 # calling process needs to set:
 # base
 # $dry_run
