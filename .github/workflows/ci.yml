@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install git+https://github.com/GerrySant/multimodalhugs.git@5201c80f27aa70c460e8297a799dc5daccbd1b3b
-          pip install pose-format sacrebleu
+          pip install git+https://github.com/GerrySant/pose.git@multiple_support sacrebleu
 
       - name: Run pipeline test
         run: bash tests/test_pipeline.sh

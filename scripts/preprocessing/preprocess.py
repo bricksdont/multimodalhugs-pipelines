@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import glob
 import argparse
 import importlib
 import logging
 import csv
 import itertools
+import urllib.request
 
 from pose_format.utils.reader import BufferReader
 from pose_format.pose import Pose, PoseHeader
@@ -16,7 +18,36 @@ from typing import Any, Iterator, Optional, Dict, List
 
 SUPPORTED_DATASETS = ["phoenix"]
 SUPPORTED_FEATURE_TYPES = ["pose"]
-SUPPORTED_POSE_TYPES = ["mediapipe"]
+SUPPORTED_POSE_TYPES = [
+    "alphapose_136", "mediapipe", "mmposewholebody", "openpifpaf",
+    "openpose", "sapiens", "sdpose", "smplest_x",
+]
+
+POSE_DOWNLOAD_URLS = {
+    "alphapose_136":   "https://datasets.sigma-sign-language.com/poses/alphapose_136/phoenix.zip",
+    "mediapipe":       "https://datasets.sigma-sign-language.com/poses/holistic/phoenix.tar.gz",
+    "mmposewholebody": "https://datasets.sigma-sign-language.com/poses/mmposewholebody/phoenix.zip",
+    "openpifpaf":      "https://datasets.sigma-sign-language.com/poses/openpifpaf/phoenix.zip",
+    "openpose":        "https://datasets.sigma-sign-language.com/poses/openpose/phoenix.zip",
+    "sapiens":         "https://datasets.sigma-sign-language.com/poses/sapiens/phoenix.zip",
+    "sdpose":          "https://datasets.sigma-sign-language.com/poses/sdpose/phoenix.zip",
+    "smplest_x":       "https://datasets.sigma-sign-language.com/poses/smplest_x/phoenix.zip",
+}
+
+# Expected feat_dim per pose type for sanity checking.
+# mediapipe: 534 after reduce_holistic_poses transformation at runtime.
+# Others: total_points * dims_per_keypoint as read from .pose file header.
+# See https://github.com/ZurichNLP/video-to-pose for keypoint counts.
+EXPECTED_FEAT_DIMS = {
+    "mediapipe":       534,   # after reduce_holistic_poses
+    "alphapose_136":   272,   # 136 * 2 (XY, 2D)
+    "mmposewholebody": 399,   # 133 * 3 (XYC)
+    "openpifpaf":      399,   # 133 * 3 (XYC)
+    "sdpose":          399,   # 133 * 3 (XYC)
+    "openpose":        411,   # 137 * 3 (XYC)
+    "smplest_x":       278,   # 139 * 2 (XY)
+    "sapiens":         620,
+}
 
 
 def parse_arguments():
@@ -41,11 +72,6 @@ def parse_arguments():
 
 
 def get_pose_identifier(pose_type: str):
-    """
-
-    :param pose_type: a simple name for a pose type such as "mediapipe"
-    :return: an identifier for the pose type such as "holistic" that the library sign-language-datasets uses
-    """
     if pose_type == "mediapipe":
         return "holistic"
     else:
@@ -53,37 +79,20 @@ def get_pose_identifier(pose_type: str):
 
 
 def get_dataset_identifier(dataset: str):
-    """
-
-    :param dataset: a simple name for a dataset such as "phoenix"
-    :return: an identifier for the dataset such as "rwth_phoenix2014_t" that the library sign-language-datasets uses
-    """
     if dataset == "phoenix":
         return "rwth_phoenix2014_t"
     else:
         return dataset
 
 
-def load_pose_header(dataset_name: str,
-                     pose_type: str) -> PoseHeader:
-    """
-    Workaround from:
-    https://github.com/sign-language-processing/datasets/issues/84
-
-    :param dataset_name: A dataset name from sign_language_datasets.datasets
-    :param pose_type: For instance holistic or openpose
-
-    :return:
-    """
+def load_pose_header(dataset_name: str, pose_type: str) -> PoseHeader:
     import sign_language_datasets.datasets  # noqa: F401
 
-    # Dynamically import the dataset module
     dataset_module = importlib.import_module(f"sign_language_datasets.datasets.{dataset_name}.{dataset_name}")
 
     if pose_type not in dataset_module._POSE_HEADERS:
         raise ValueError(f"Pose type not supported: '{pose_type}'. Supported: {dataset_module._POSE_HEADERS.keys()}")
 
-    # Read the pose header from the dataset's predefined file
     with open(dataset_module._POSE_HEADERS[pose_type], "rb") as buffer:
         pose_header = PoseHeader.read(BufferReader(buffer.read()))
 
@@ -93,13 +102,6 @@ def load_pose_header(dataset_name: str,
 def load_dataset(dataset_name: str = "rwth_phoenix2014_t",
                  data_dir: Optional[str] = None,
                  pose_type: str = "holistic"):
-    """
-    :param dataset_name:
-    :param data_dir:
-    :param pose_type:
-
-    :return:
-    """
     import tensorflow_datasets as tfds
     from sign_language_datasets.datasets.config import SignDatasetConfig
 
@@ -115,6 +117,31 @@ def load_dataset(dataset_name: str = "rwth_phoenix2014_t",
     return dataset
 
 
+def load_text_labels(dataset_name: str, data_dir: Optional[str] = None) -> Dict[str, Dict[str, str]]:
+    """Load text labels from TFDS without downloading pose data."""
+    import tensorflow_datasets as tfds
+    from sign_language_datasets.datasets.config import SignDatasetConfig
+
+    config = SignDatasetConfig(name=dataset_name,
+                               version="3.0.0",
+                               include_video=False,
+                               process_video=False,
+                               fps=25,
+                               include_pose=False)
+
+    dataset = tfds.load(dataset_name, builder_kwargs=dict(config=config), data_dir=data_dir)
+
+    labels: Dict[str, Dict[str, str]] = {}
+    for split_name in ["train", "validation", "test"]:
+        labels[split_name] = {}
+        for datum in dataset[split_name]:
+            datum_id = datum["id"].numpy().decode("utf-8")
+            text = datum["text"].numpy().decode("utf-8")
+            labels[split_name][datum_id] = text
+
+    return labels
+
+
 Example = Dict[str, str]
 
 
@@ -123,15 +150,6 @@ def generate_examples(dataset: Any,
                       pose_header: PoseHeader,
                       feature_dir: str,
                       dry_run: bool = False) -> Iterator[Example]:
-    """
-    :param dataset:
-    :param split_name: "train", "validation" or "test"
-    :param pose_header:
-    :param feature_dir:
-    :param dry_run:
-    :return:
-    """
-
     if dry_run:
         data_iterator = itertools.islice(dataset[split_name], 0, 10)
     else:
@@ -152,7 +170,6 @@ def generate_examples(dataset: Any,
                                   data=pose_data,
                                   confidence=pose_confidence)
 
-        # Construct Pose object and write to file
         pose = Pose(pose_header, pose_body)
 
         pose_filepath = os.path.join(feature_dir, f"{datum_id}.pose")
@@ -172,11 +189,92 @@ def generate_examples(dataset: Any,
         yield example
 
 
+def generate_examples_from_directory(feature_dir: str,
+                                     split_name: str,
+                                     text_labels: Dict[str, str]) -> List[Example]:
+    """Enumerate pre-downloaded .pose files and match with text labels."""
+    split_dir = os.path.join(feature_dir, split_name)
+    pose_files = sorted(glob.glob(os.path.join(split_dir, "*.pose")))
+
+    examples = []
+    for pose_filepath in pose_files:
+        datum_id = os.path.splitext(os.path.basename(pose_filepath))[0]
+        text = text_labels.get(datum_id, "")
+        if not text:
+            logging.warning(f"No text label found for id: {datum_id}")
+        examples.append({"datum_id": datum_id, "text": text, "pose_filepath": pose_filepath})
+
+    return examples
+
+
+def download_and_extract_poses(pose_type: str, feature_dir: str) -> None:
+    """Download archive from Cloudflare and extract to feature_dir."""
+    url = POSE_DOWNLOAD_URLS[pose_type]
+    archive_name = os.path.basename(url)
+    archive_path = os.path.join(feature_dir, archive_name)
+    tmp_path = archive_path + ".tmp"
+
+    if not os.path.exists(archive_path):
+        logging.info(f"Downloading {url} -> {archive_path}")
+        urllib.request.urlretrieve(url, tmp_path)
+        os.rename(tmp_path, archive_path)
+    else:
+        logging.info(f"Archive already exists, skipping download: {archive_path}")
+
+    train_dir = os.path.join(feature_dir, "train")
+    if os.path.isdir(train_dir) and any(f.endswith(".pose") for f in os.listdir(train_dir)):
+        logging.info(f"Poses already extracted in {train_dir}, skipping extraction")
+        return
+
+    logging.info(f"Extracting {archive_path} -> {feature_dir}")
+    if archive_name.endswith(".tar.gz"):
+        import tarfile
+        with tarfile.open(archive_path, "r:gz") as tar:
+            tar.extractall(feature_dir)
+    else:
+        import zipfile
+        with zipfile.ZipFile(archive_path, "r") as z:
+            z.extractall(feature_dir)
+
+    # mediapipe archive uses "dev/" instead of "validation/"
+    dev_dir = os.path.join(feature_dir, "dev")
+    val_dir = os.path.join(feature_dir, "validation")
+    if os.path.isdir(dev_dir) and not os.path.isdir(val_dir):
+        logging.info("Renaming dev/ -> validation/")
+        os.rename(dev_dir, val_dir)
+
+
+def compute_feat_dim_from_file(pose_filepath: str) -> int:
+    """Compute feat_dim as sum of (n_points * n_dims) across all pose header components."""
+    with open(pose_filepath, "rb") as f:
+        pose = Pose.read(f.read())
+    total = 0
+    for component in pose.header.components:
+        total += len(component.points) * len(component.format)
+    return total
+
+
+def get_feat_dim(pose_type: str, feature_dir: str) -> int:
+    """Return feat_dim, warn if it differs from the expected value."""
+    if pose_type == "mediapipe":
+        # reduce_holistic_poses is applied at runtime by the processor; result is always 534
+        feat_dim = EXPECTED_FEAT_DIMS["mediapipe"]
+    else:
+        pose_files = sorted(glob.glob(os.path.join(feature_dir, "train", "*.pose")))
+        if not pose_files:
+            raise FileNotFoundError(f"No .pose files found in {feature_dir}/train")
+        feat_dim = compute_feat_dim_from_file(pose_files[0])
+
+    expected = EXPECTED_FEAT_DIMS.get(pose_type)
+    if expected is not None and feat_dim != expected:
+        logging.warning(
+            f"feat_dim={feat_dim} for pose_type={pose_type!r} "
+            f"does not match expected value {expected}. Please check the pose header."
+        )
+    return feat_dim
+
+
 def _fake_holistic_pose(num_frames: int, num_people: int = 1, fps: float = 25.0) -> Pose:
-    """
-    Build a fake mediapipe holistic pose without importing mediapipe.
-    Component names and point lists are the standard MediaPipe holistic definitions.
-    """
     import numpy as np
     import numpy.ma as ma
     from pose_format.pose_header import PoseHeaderComponent, PoseHeaderDimensions
@@ -228,11 +326,6 @@ def generate_fake_examples(feature_dir: str,
     """
     Generate fake holistic pose examples without downloading any real dataset.
     Does not require mediapipe. Useful for CI and smoke testing.
-
-    :param feature_dir:
-    :param num_examples:
-    :param num_frames:
-    :return:
     """
     examples = []
 
@@ -261,13 +354,6 @@ def write_examples_tsv(examples: List[Example],
                        split_name: str,):
     """
     If signal_start and signal_end are not required (when all the frames are used), must be set as 0.
-
-    :param examples:
-    :param output_dir:
-    :param encoder_prompt:
-    :param decoder_prompt:
-    :param split_name:
-    :return:
     """
 
     filepath = os.path.join(output_dir, f"{split_name}.tsv")
@@ -294,7 +380,6 @@ def write_examples_tsv(examples: List[Example],
 
 
 def main():
-    # Parse arguments
     args = parse_arguments()
 
     logging.basicConfig(level=logging.DEBUG)
@@ -324,25 +409,33 @@ def main():
                                decoder_prompt=args.decoder_prompt,
                                split_name=split_name)
     else:
-        dataset = load_dataset(dataset_name=get_dataset_identifier(args.dataset),
-                               data_dir=args.tfds_data_dir,
-                               pose_type=get_pose_identifier(args.pose_type))
+        download_and_extract_poses(args.pose_type, args.feature_dir)
 
-        pose_header = load_pose_header(dataset_name=get_dataset_identifier(args.dataset),
-                                       pose_type=get_pose_identifier(args.pose_type))
+        text_labels = load_text_labels(
+            dataset_name=get_dataset_identifier(args.dataset),
+            data_dir=args.tfds_data_dir,
+        )
 
         for split_name in ["train", "validation", "test"]:
-            examples = list(generate_examples(dataset=dataset,
-                                              split_name=split_name,
-                                              pose_header=pose_header,
-                                              feature_dir=args.feature_dir,
-                                              dry_run=args.dry_run))
+            examples = generate_examples_from_directory(
+                feature_dir=args.feature_dir,
+                split_name=split_name,
+                text_labels=text_labels[split_name],
+            )
+            if args.dry_run:
+                examples = examples[:10]
             stats[split_name] = len(examples)
             write_examples_tsv(examples=examples,
                                output_dir=args.output_dir,
                                encoder_prompt=args.encoder_prompt,
                                decoder_prompt=args.decoder_prompt,
                                split_name=split_name)
+
+        feat_dim = get_feat_dim(args.pose_type, args.feature_dir)
+        feat_dim_path = os.path.join(args.output_dir, "feat_dim.txt")
+        with open(feat_dim_path, "w") as f:
+            f.write(str(feat_dim))
+        logging.info(f"feat_dim={feat_dim} written to {feat_dim_path}")
 
     logging.debug("Number of examples found:")
     logging.debug(stats)

@@ -28,6 +28,10 @@ git clone https://github.com/GerrySant/multimodalhugs.git $tools/multimodalhugs
 
 pip install git+https://github.com/sign-language-processing/datasets.git
 
+# pose-format fork with support for additional pose types (alphapose, openpose, smplest_x, etc.)
+
+pip install git+https://github.com/GerrySant/pose.git@multiple_support
+
 # TF keras, because keras 3 is not supported in Transformers
 
 pip install tf-keras

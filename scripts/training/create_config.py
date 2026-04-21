@@ -16,7 +16,7 @@ model:
   multimodal_mapper_dropout: 0.1                  # Dropout probability for the Multimodal Mapper to prevent overfitting.
   backbone_type: {backbone_type}                  # Identifier for the pretrained backbone (e.g., "m2m_100").
   pretrained_backbone: {pretrained_backbone}      # Weights or checkpoint identifier for the pretrained backbone.
-  feat_dim: 534                                   # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
+  feat_dim: {feat_dim}                             # Dimension of the Feature Extractor output. If features are extracted off-line, the dimensionality of features.
 
 training:
   run_name: {run_name}                             # The name or identifier of the model configuration.
@@ -105,6 +105,7 @@ def fill_template(args: argparse.Namespace) -> str:
         dataloader_num_workers=args.dataloader_num_workers,
         fp16=args.fp16,
         seed=args.seed,
+        feat_dim=args.feat_dim,
     )
 
 # Parse command-line arguments
@@ -154,6 +155,9 @@ def parse_arguments():
     parser.add_argument("--fp16", action="store_true", default=False,
                         help="Whether to use fp16 16-bit (mixed) precision training instead of 32-bit training.", required=False)
 
+    parser.add_argument("--feat-dim", type=int, default=534,
+                        help="Feature dimension of the pose encoder output (default: 534 for mediapipe).",
+                        required=False)
     parser.add_argument("--dry-run", action="store_true", default=False,
                         help="Train for a small number of steps.", required=False)
     return parser.parse_args()
