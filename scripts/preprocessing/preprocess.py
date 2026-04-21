@@ -127,7 +127,7 @@ def load_text_labels(dataset_name: str, data_dir: Optional[str] = None) -> Dict[
                                include_video=False,
                                process_video=False,
                                fps=25,
-                               include_pose=False)
+                               include_pose=None)
 
     dataset = tfds.load(dataset_name, builder_kwargs=dict(config=config), data_dir=data_dir)
 
