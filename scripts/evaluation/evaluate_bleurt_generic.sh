@@ -8,11 +8,7 @@
 # $output
 # $bleurt_checkpoint
 
-for unused in pseudo_loop; do
-
-    if [[ -s $output ]]; then
-      continue
-    fi
+if [[ ! -s $output ]]; then
 
     # avoid TF JIT compiler error
 
@@ -27,4 +23,4 @@ for unused in pseudo_loop; do
     echo "$output"
     cat $output
 
-done
+fi
