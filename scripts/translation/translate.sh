@@ -1,13 +1,21 @@
 #! /bin/bash
 
+set -euo pipefail
+
 # calling script needs to set:
 # $base
 # $dry_run
 # $model_name
+# $dataset
+# $feature_type
+# $pose_type
 
 base=$1
 dry_run=$2
 model_name=$3
+dataset=$4
+feature_type=$5
+pose_type=$6
 
 venvs=$base/venvs
 configs=$base/configs
@@ -73,7 +81,7 @@ fi
 
 multimodalhugs-generate \
     --task "translation" \
-    --config_path $configs_sub/config_phoenix.yaml \
+    --config_path $configs_sub/config.yaml \
     --metric_name "sacrebleu" \
     --generate_output_dir $translations_sub \
     --setup_path $models_sub/setup \

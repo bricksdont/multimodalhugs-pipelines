@@ -26,9 +26,9 @@ training:
   predict_with_generate: true                      # Use generate to compute generative metrics.
   save_strategy: "steps"                           # Checkpoint save strategy during training.
   eval_strategy: "steps"                           # Evaluation strategy ("steps" or "epoch").
-  eval_steps: 128                                  # Number of training steps between evaluations.
-  logging_steps: 128                               # Interval (in steps) at which training metrics are logged.
-  save_steps: 128                                  # Interval (in steps) at which model checkpoints are saved.
+  eval_steps: {eval_steps}                         # Number of training steps between evaluations.
+  logging_steps: {eval_steps}                      # Interval (in steps) at which training metrics are logged.
+  save_steps: {eval_steps}                         # Interval (in steps) at which model checkpoints are saved.
   per_device_train_batch_size: {batch_size}                   # Batch size per device during training.
   per_device_eval_batch_size: {batch_size}                    # Batch size per device for evaluation.
   label_smoothing_factor: {label_smoothing_factor}
@@ -71,8 +71,10 @@ def fill_template(args: argparse.Namespace) -> str:
     """
     if args.dry_run:
         max_steps = 10
+        eval_steps = 5
     else:
         max_steps = 500000
+        eval_steps = 128
 
     if args.new_vocabulary is not None:
         new_vocabulary_path = f"{args.config_dir}/new_vocabulary.txt"
@@ -92,6 +94,7 @@ def fill_template(args: argparse.Namespace) -> str:
         pretrained_backbone=args.pretrained_backbone,
         reduce_holistic_poses=args.reduce_holistic_poses,
         max_steps=max_steps,
+        eval_steps=eval_steps,
         text_tokenizer_path=args.text_tokenizer_path,
         new_vocabulary=args.new_vocabulary,
         learning_rate=args.learning_rate,
@@ -165,7 +168,7 @@ def main():
 
     filled_template = fill_template(args)
 
-    config_path = f"{args.config_dir}/config_{args.run_name}.yaml"
+    config_path = f"{args.config_dir}/config.yaml"
 
     logging.debug(f"Writing config to: '{config_path}'")
 

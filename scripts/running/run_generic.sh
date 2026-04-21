@@ -4,6 +4,9 @@
 
 : "${base:="/shares/sigma.ebling.cl.uzh/mathmu/multimodalhugs-examples"}"
 : "${dry_run:="false"}"
+: "${dataset:="phoenix"}"
+: "${feature_type:="pose"}"
+: "${pose_type:="mediapipe"}"
 : "${model_name:="phoenix"}"
 : "${learning_rate:="5e-05"}"
 : "${gradient_accumulation_steps:=1}"
@@ -48,8 +51,8 @@ log_vars() {
   done
 }
 
-log_vars base dry_run model_name learning_rate gradient_accumulation_steps warmup_steps batch_size \
-    label_smoothing_factor dataloader_num_workers fp16 seed gpu_type
+log_vars base dry_run dataset feature_type pose_type model_name learning_rate gradient_accumulation_steps \
+    warmup_steps batch_size label_smoothing_factor dataloader_num_workers fp16 seed gpu_type
 
 echo "##############################################" | tee -a $logs_sub/MAIN
 
@@ -86,8 +89,8 @@ id_preprocess=$(
     $scripts/running/sbatch_bare.sh \
     $SLURM_ARGS_GENERIC \
     $SLURM_LOG_ARGS \
-    $scripts/preprocessing/phoenix_dataset_preprocessing.sh \
-    $base $dry_run
+    $scripts/preprocessing/preprocess.sh \
+    $base $dry_run $dataset $feature_type $pose_type
 )
 
 echo "  id_preprocess: $id_preprocess | $logs_sub/slurm-$id_preprocess.out" | tee -a $logs_sub/MAIN
@@ -103,8 +106,8 @@ id_train=$(
     $SLURM_ARGS_TRAIN \
     --dependency=afterok:$id_preprocess \
     $SLURM_LOG_ARGS \
-    $scripts/training/train_phoenix.sh \
-    $base $dry_run $model_name \
+    $scripts/training/train.sh \
+    $base $dry_run $model_name $dataset $feature_type $pose_type \
     $learning_rate $gradient_accumulation_steps $warmup_steps $batch_size $label_smoothing_factor \
     $dataloader_num_workers $fp16 $seed
 )
@@ -118,8 +121,8 @@ id_translate=$(
     $SLURM_ARGS_TRANSLATE \
     --dependency=afterok:$id_train \
     $SLURM_LOG_ARGS \
-    $scripts/translation/translate_phoenix.sh \
-    $base $dry_run $model_name
+    $scripts/translation/translate.sh \
+    $base $dry_run $model_name $dataset $feature_type $pose_type
 )
 
 echo "  id_translate: $id_translate | $logs_sub/slurm-$id_translate.out"  | tee -a $logs_sub/MAIN

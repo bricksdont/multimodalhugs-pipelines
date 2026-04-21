@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('scripts/environment/install.sh') }}
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: /tmp/multimodalhugs_pipeline_test/huggingface
+          key: hf-m2m100-418M
+
+      - name: Install dependencies
+        run: |
+          pip install git+https://github.com/GerrySant/multimodalhugs.git@5201c80f27aa70c460e8297a799dc5daccbd1b3b
+          pip install pose-format sacrebleu
+
+      - name: Run pipeline test
+        run: bash tests/test_pipeline.sh

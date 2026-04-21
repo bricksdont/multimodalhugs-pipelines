@@ -9,6 +9,10 @@ scripts=$base/scripts
 
 dry_run="false"
 
+dataset="phoenix"
+feature_type="pose"
+pose_type="mediapipe"
+
 model_name="phoenix"
 
 # best hyperparams found so far

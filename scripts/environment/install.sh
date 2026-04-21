@@ -47,5 +47,9 @@ except m.PackageNotFoundError:
 EOF
 )
 
+# a missing dependency of etils (tfds)
+
+pip install importlib_resources
+
 pip uninstall -y opencv-python opencv-python-headless
 pip install "opencv-python-headless==${OPENCV_VERSION}"
