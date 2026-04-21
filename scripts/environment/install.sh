@@ -32,7 +32,7 @@ pip install git+https://github.com/sign-language-processing/datasets.git
 # Cloned without submodules to avoid SSH auth failure on the pose-pipelines submodule.
 
 git clone --no-recurse-submodules -b multiple_support https://github.com/GerrySant/pose.git $tools/pose-format
-pip install $tools/pose-format
+pip install $tools/pose-format/src/python
 
 # TF keras, because keras 3 is not supported in Transformers
 

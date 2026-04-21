@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install git+https://github.com/GerrySant/multimodalhugs.git@5201c80f27aa70c460e8297a799dc5daccbd1b3b
           git clone --no-recurse-submodules -b multiple_support https://github.com/GerrySant/pose.git /tmp/pose-format
-          pip install /tmp/pose-format sacrebleu
+          pip install /tmp/pose-format/src/python sacrebleu
 
       - name: Run pipeline test
         run: bash tests/test_pipeline.sh
