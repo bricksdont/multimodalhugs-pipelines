@@ -19,7 +19,7 @@ Then install required software:
 
 ## Run experiments
 
-### Single experiment
+### Basic experiment
 
 It is a good idea to use `dry_run="true"` the first time you are running code, which creates all files, executes all
 the code but uses only a fraction of the training data, trains for very few steps only, etc - as a
@@ -38,10 +38,11 @@ as SLURM jobs.
 If the process is fully reproducible, this should result in a test set BLEU score of `10.691`. This
 value is inside the file `evaluations/phoenix/test_score.bleu`.
 
-### Hyperparameter search
+### Further experiments
 
-See [experiments/hyperparameter_search](experiments/hyperparameter_search/README.md).
+Actual experiments are in the [experiments](experiments) folder, each with its own README.
 
-### Reproducibility
-
-See [experiments/reproducibility](experiments/reproducibility/README.md).
+| Experiment                                                            | Description                                        |
+|-----------------------------------------------------------------------|----------------------------------------------------|
+| [Hyperparameter search](experiments/hyperparameter_search/README.md) | Train ~50 models to find good hyperparameters      |
+| [Reproducibility](experiments/reproducibility/README.md)             | Train three identical models to test repeatability |
