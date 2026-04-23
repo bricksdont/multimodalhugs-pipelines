@@ -79,7 +79,7 @@ Each step script (`preprocess.sh`, `train.sh`, `translate.sh`) follows the same 
 - `opencv-python` must be replaced with `opencv-python-headless` because OpenGL is unavailable on the cluster; `install.sh` detects the installed version and reinstalls the headless variant
 - `importlib_resources` must be installed explicitly — it is a missing transitive dependency of `etils`/`tensorflow_datasets` in Python 3.11
 - mediapipe is **not** installed; fake pose generation in `preprocess.py` hardcodes MediaPipe holistic component definitions directly to avoid the mediapipe/protobuf/tensorflow version conflict
-- `protobuf<4.0.0` must be pinned; protobuf 4.x dropped `FieldDescriptor.label` from the C extension, breaking TFDS when building an uncached dataset config
+- TF/TFDS are not used for Phoenix text labels; labels are downloaded directly from `ANNOTATIONS_URL` in `preprocess.py` as a plain 800 KB tar.gz, parsed with the `csv` module — no protobuf pin needed
 - `pose-format` is installed from the `GerrySant/pose` fork (`multiple_support` branch) to support non-mediapipe pose types; the default install tracks the branch tip, experiment installs pin to an exact commit
 - Each experiment that requires a reproducible environment has its own `install.sh` under `experiments/<name>/` which creates `venvs/<name>/`; `run_generic.sh` picks up the venv via the `$venv` variable (default: `huggingface`)
 

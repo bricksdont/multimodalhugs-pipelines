@@ -23,6 +23,14 @@ SUPPORTED_POSE_TYPES = [
     "openpose", "sapiens", "sdpose", "smplest_x",
 ]
 
+ANNOTATIONS_URL = "https://datasets.sigma-sign-language.com/public/phoenix/phoenix-annotations.tar.gz"
+
+ANNOTATIONS_CSV_PATHS = {
+    "train":      "PHOENIX-2014-T-release-v3/PHOENIX-2014-T/annotations/manual/PHOENIX-2014-T.train.corpus.csv",
+    "validation": "PHOENIX-2014-T-release-v3/PHOENIX-2014-T/annotations/manual/PHOENIX-2014-T.dev.corpus.csv",
+    "test":       "PHOENIX-2014-T-release-v3/PHOENIX-2014-T/annotations/manual/PHOENIX-2014-T.test.corpus.csv",
+}
+
 POSE_DOWNLOAD_URLS = {
     "alphapose_136":   "https://datasets.sigma-sign-language.com/poses/alphapose_136/phoenix.zip",
     "mediapipe":       "https://datasets.sigma-sign-language.com/poses/holistic/phoenix.tar.gz",
@@ -117,27 +125,35 @@ def load_dataset(dataset_name: str = "rwth_phoenix2014_t",
     return dataset
 
 
-def load_text_labels(dataset_name: str, data_dir: Optional[str] = None) -> Dict[str, Dict[str, str]]:
-    """Load text labels from TFDS without downloading pose data."""
-    import tensorflow_datasets as tfds
-    from sign_language_datasets.datasets.config import SignDatasetConfig
+def load_text_labels(annotations_dir: str) -> Dict[str, Dict[str, str]]:
+    """Download Phoenix annotations and return {split: {id: text}}, no TF required."""
+    import tarfile
 
-    config = SignDatasetConfig(name=dataset_name,
-                               version="3.0.0",
-                               include_video=False,
-                               process_video=False,
-                               fps=25,
-                               include_pose=None)
+    archive_name = os.path.basename(ANNOTATIONS_URL)
+    archive_path = os.path.join(annotations_dir, archive_name)
+    tmp_path = archive_path + ".tmp"
 
-    dataset = tfds.load(dataset_name, builder_kwargs=dict(config=config), data_dir=data_dir)
+    if not os.path.exists(archive_path):
+        logging.info(f"Downloading annotations from {ANNOTATIONS_URL}")
+        request = urllib.request.Request(ANNOTATIONS_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(request) as response, open(tmp_path, "wb") as f:
+            f.write(response.read())
+        os.rename(tmp_path, archive_path)
+
+    first_csv = os.path.join(annotations_dir, next(iter(ANNOTATIONS_CSV_PATHS.values())))
+    if not os.path.exists(first_csv):
+        logging.info(f"Extracting {archive_path}")
+        with tarfile.open(archive_path, "r:gz") as tar:
+            tar.extractall(annotations_dir)
 
     labels: Dict[str, Dict[str, str]] = {}
-    for split_name in ["train", "validation", "test"]:
+    for split_name, csv_rel_path in ANNOTATIONS_CSV_PATHS.items():
+        csv_path = os.path.join(annotations_dir, csv_rel_path)
         labels[split_name] = {}
-        for datum in dataset[split_name]:
-            datum_id = datum["id"].numpy().decode("utf-8")
-            text = datum["text"].numpy().decode("utf-8")
-            labels[split_name][datum_id] = text
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f, delimiter="|")
+            for row in reader:
+                labels[split_name][row["name"]] = row["translation"]
 
     return labels
 
@@ -415,10 +431,9 @@ def main():
     else:
         download_and_extract_poses(args.pose_type, args.feature_dir)
 
-        text_labels = load_text_labels(
-            dataset_name=get_dataset_identifier(args.dataset),
-            data_dir=args.tfds_data_dir,
-        )
+        # annotations_dir = $base/data/$dataset (two levels above feature_dir)
+        annotations_dir = os.path.dirname(os.path.dirname(args.feature_dir))
+        text_labels = load_text_labels(annotations_dir=annotations_dir)
 
         for split_name in ["train", "validation", "test"]:
             examples = generate_examples_from_directory(
