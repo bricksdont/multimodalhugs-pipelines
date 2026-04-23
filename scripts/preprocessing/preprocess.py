@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import glob
 import argparse
 import importlib
@@ -270,6 +271,27 @@ def generate_examples_from_directory(
     return examples
 
 
+class DownloadError(Exception):
+    """Raised when a network download fails; signals the shell retry loop."""
+
+
+def _promote_subdirectory(feature_dir: str) -> None:
+    """If extraction produced a single top-level subdirectory, move its contents up."""
+    if os.path.isdir(os.path.join(feature_dir, "train")):
+        return
+    subdirs = [
+        d
+        for d in os.listdir(feature_dir)
+        if os.path.isdir(os.path.join(feature_dir, d))
+    ]
+    if len(subdirs) == 1:
+        subdir_path = os.path.join(feature_dir, subdirs[0])
+        for item in os.listdir(subdir_path):
+            os.rename(os.path.join(subdir_path, item), os.path.join(feature_dir, item))
+        os.rmdir(subdir_path)
+        logging.info(f"Promoted contents of {subdirs[0]}/ up to {feature_dir}/")
+
+
 def download_and_extract_poses(pose_type: str, feature_dir: str) -> None:
     """Download archive from Cloudflare and extract to feature_dir."""
     url = POSE_DOWNLOAD_URLS[pose_type]
@@ -279,9 +301,12 @@ def download_and_extract_poses(pose_type: str, feature_dir: str) -> None:
 
     if not os.path.exists(archive_path):
         logging.info(f"Downloading {url} -> {archive_path}")
-        request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(request) as response, open(tmp_path, "wb") as f:
-            f.write(response.read())
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(request) as response, open(tmp_path, "wb") as f:
+                f.write(response.read())
+        except Exception as e:
+            raise DownloadError(f"Failed to download {url}: {e}") from e
         os.rename(tmp_path, archive_path)
     else:
         logging.info(f"Archive already exists, skipping download: {archive_path}")
@@ -304,6 +329,8 @@ def download_and_extract_poses(pose_type: str, feature_dir: str) -> None:
 
         with zipfile.ZipFile(archive_path, "r") as z:
             z.extractall(feature_dir)
+
+    _promote_subdirectory(feature_dir)
 
     # mediapipe archive uses "dev/" instead of "validation/"
     dev_dir = os.path.join(feature_dir, "dev")
@@ -571,7 +598,11 @@ def main():
                 split_name=split_name,
             )
     else:
-        download_and_extract_poses(args.pose_type, args.feature_dir)
+        try:
+            download_and_extract_poses(args.pose_type, args.feature_dir)
+        except DownloadError as e:
+            logging.error(str(e))
+            sys.exit(2)
 
         # annotations_dir = $base/data/$dataset (two levels above feature_dir)
         annotations_dir = os.path.dirname(os.path.dirname(args.feature_dir))

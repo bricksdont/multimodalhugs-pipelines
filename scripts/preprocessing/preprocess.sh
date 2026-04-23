@@ -72,12 +72,17 @@ until python $scripts/preprocessing/preprocess.py \
     --output-dir $preprocessed \
     --tfds-data-dir $data/tensorflow_datasets $dry_run_arg
 do
-    attempt=$((attempt + 1))
-    if [[ $attempt -ge $max_attempts ]]; then
-        echo "Preprocessing failed after $max_attempts attempts, giving up"
+    exit_code=$?
+    if [[ $exit_code -ne 2 ]]; then
+        echo "Preprocessing failed with non-retriable error (exit code $exit_code), giving up"
         exit 1
     fi
-    echo "Attempt $attempt failed, retrying in 60 seconds..."
+    attempt=$((attempt + 1))
+    if [[ $attempt -ge $max_attempts ]]; then
+        echo "Preprocessing failed after $max_attempts download attempts, giving up"
+        exit 1
+    fi
+    echo "Attempt $attempt failed (download error), retrying in 60 seconds..."
     sleep 60
 done
 
