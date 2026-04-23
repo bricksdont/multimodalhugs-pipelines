@@ -59,12 +59,19 @@ import importlib.metadata as m
 try:
     print(m.version("opencv-python"))
 except m.PackageNotFoundError:
-    print(m.version("opencv-python-headless"))
+    try:
+        print(m.version("opencv-python-headless"))
+    except m.PackageNotFoundError:
+        print("")
 EOF
 )
 
 pip uninstall -y opencv-python opencv-python-headless
-pip install "opencv-python-headless==${OPENCV_VERSION}"
+if [[ -n $OPENCV_VERSION ]]; then
+    pip install "opencv-python-headless==${OPENCV_VERSION}"
+else
+    pip install opencv-python-headless
+fi
 
 # a missing dependency of etils (tfds)
 
