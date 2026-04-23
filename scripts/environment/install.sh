@@ -9,7 +9,7 @@ base=$scripts/..
 venvs=$base/venvs
 tools=$base/tools
 
-venv_name="huggingface"
+venv_name="default"
 
 mkdir -p $venvs $tools
 

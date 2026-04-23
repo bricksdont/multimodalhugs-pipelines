@@ -9,7 +9,7 @@ base=$(realpath $base)
 
 module load miniforge3
 
-source activate $base/venvs/huggingface
+source activate $base/venvs/default
 
 python $base/scripts/debugging/debug_reproducibility.py \
     --checkpoint-1 $base/models/phoenix_1/setup/model \

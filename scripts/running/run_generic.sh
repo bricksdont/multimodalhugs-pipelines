@@ -17,7 +17,7 @@
 : "${fp16:="true"}"
 : "${seed:=42}"
 : "${gpu_type:="v100"}"
-: "${venv:="huggingface"}"
+: "${venv:="default"}"
 
 export venv
 
