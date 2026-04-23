@@ -343,15 +343,28 @@ def download_and_extract_poses(pose_type: str, feature_dir: str) -> None:
 
 
 def compute_feat_dim_from_file(pose_filepath: str) -> int:
-    """Compute feat_dim from the actual body data shape (n_points * n_dims).
+    """Compute feat_dim from body.data.shape and cross-check against the header.
 
-    Reads from body.data.shape rather than the header format string because some
-    pose types (e.g. alphapose_136) declare XYC in the header but only store XY
-    in the data array.
+    The header's point_format (e.g. "XYC") declares how many values are stored
+    per point. A trailing "C" means confidence, which pose-format strips into
+    body.confidence — so the expected coordinate dims are len(format) - 1 when
+    the format ends in "C", otherwise len(format).  We compare this against the
+    actual body.data.shape[-1] and warn on any mismatch.
     """
     with open(pose_filepath, "rb") as f:
         pose = Pose.read(f.read())
     _, _, n_points, n_dims = pose.body.data.shape
+
+    for component in pose.header.components:
+        fmt = component.format
+        expected_dims = len(fmt) - 1 if fmt.endswith("C") else len(fmt)
+        if expected_dims != n_dims:
+            logging.warning(
+                f"Component {component.name!r}: header format {fmt!r} implies "
+                f"{expected_dims} coordinate dims, but body.data has {n_dims}. "
+                f"Pose file may be malformed: {pose_filepath}"
+            )
+
     return n_points * n_dims
 
 
