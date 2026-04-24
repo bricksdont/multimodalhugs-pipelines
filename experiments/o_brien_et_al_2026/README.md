@@ -6,16 +6,16 @@ This experiment trains one model per pose estimator on the Phoenix dataset and c
 
 Eight pose estimators are evaluated:
 
-| Pose type | Keypoints | Format | Expected feat_dim |
-|---|---|---|---|
-| `alphapose_136` | 136 | XY (2D) | 272 |
-| `mediapipe` | 534 (after reduction) | XYZC | 534 |
-| `mmposewholebody` | 133 | XY | 266 |
-| `openpifpaf` | 133 | XY | 266 |
-| `openpose` | 137 | XY | 274 |
-| `sapiens` | — | — | 620 |
-| `sdpose` | 133 | XY | 266 |
-| `smplest_x` | 139 | XY | 278 |
+| Pose type | Keypoints             | Format   | Expected feat_dim |
+|---|-----------------------|----------|---|
+| `alphapose_136` | 136                   | XY (2D)  | 272 |
+| `mediapipe` | 178 (after reduction) | XYZ (3D) | 534 |
+| `mmposewholebody` | 133                   | XY       | 266 |
+| `openpifpaf` | 133                   | XY       | 266 |
+| `openpose` | 137                   | XY       | 274 |
+| `sapiens` | 310                   | XY       | 620 |
+| `sdpose` | 133                   | XY       | 266 |
+| `smplest_x` | 139                   | XY       | 278 |
 
 Pre-estimated poses are downloaded automatically from Cloudflare during preprocessing.
 See [`POSE_DOWNLOAD_URLS`](../../scripts/preprocessing/preprocess.py) for the exact URLs.

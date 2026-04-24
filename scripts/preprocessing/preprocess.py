@@ -67,7 +67,7 @@ EXPECTED_FEAT_DIMS = {
     "sdpose": 266,  # 133 * 2 (XY)
     "openpose": 274,  # 137 * 2 (XY)
     "smplest_x": 278,  # 139 * 2 (XY)
-    "sapiens": 620,
+    "sapiens": 620, # 310 * 2 (XY)
 }
 
 
