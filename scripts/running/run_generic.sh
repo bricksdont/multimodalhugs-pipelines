@@ -69,11 +69,11 @@ elif [[ $gpu_type == "h100" ]]; then
   gpu_parameters="--gpus=H100:1"
 else
   # avoid L4 nodes with too little memory
-  gpu_parameters="--gpus=1 --constraint=GPUMEM32GB"
+  gpu_parameters="--gpus=1 --constraint=GPUMEM80GB|GPUMEM96GB|GPUMEM140GB"
 fi
 
 SLURM_ARGS_GENERIC="--cpus-per-task=8 --time=24:00:00 --mem=16G"
-SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
+SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task 8 --mem 32g"
 SLURM_ARGS_TRANSLATE="--time=12:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
 SLURM_ARGS_EVALUATE="--time=01:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
 
