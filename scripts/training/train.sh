@@ -72,9 +72,9 @@ which python
 echo "activate path:"
 which activate
 
-echo "Executing: source activate $venvs/huggingface"
+echo "Executing: source activate $venvs/${venv:-default}"
 
-source activate $venvs/huggingface
+source activate $venvs/${venv:-default}
 
 echo "Python after activating:"
 which python
@@ -111,6 +111,8 @@ else
     reduce_holistic_poses_arg=""
 fi
 
+feat_dim=$(cat $preprocessed/feat_dim.txt)
+
 python $scripts/training/create_config.py \
     --run-name "$dataset" \
     --config-dir $configs_sub \
@@ -118,6 +120,7 @@ python $scripts/training/create_config.py \
     --validation-metadata-file $preprocessed/validation.tsv \
     --test-metadata-file $preprocessed/test.tsv \
     --new-vocabulary "__dgs__" \
+    --feat-dim $feat_dim \
     --learning-rate $learning_rate \
     --gradient-accumulation-steps $gradient_accumulation_steps \
     --warmup-steps $warmup_steps \

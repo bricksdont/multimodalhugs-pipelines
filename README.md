@@ -9,11 +9,7 @@ Download the code:
     git clone https://github.com/bricksdont/multimodalhugs-pipelines
     cd multimodalhugs-pipelines
 
-Create a venv:
-
-    ./scripts/environment/create_env.sh
-
-Then install required software:
+Create a venv and install required software:
 
     ./scripts/environment/install.sh
 
@@ -46,3 +42,4 @@ Actual experiments are in the [experiments](experiments) folder, each with its o
 |-----------------------------------------------------------------------|----------------------------------------------------|
 | [Hyperparameter search](experiments/hyperparameter_search/README.md) | Train ~50 models to find good hyperparameters      |
 | [Reproducibility](experiments/reproducibility/README.md)             | Train three identical models to test repeatability |
+| [O'Brien et al. 2026](experiments/o_brien_et_al_2026/README.md)      | Compare 8 pose estimators on Phoenix               |

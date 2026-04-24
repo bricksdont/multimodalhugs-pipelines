@@ -8,7 +8,7 @@ configs
 setup
 evaluations
 translations
-summaries
+/summaries
 .venv
 .idea
 # Byte-compiled / optimized / DLL files

@@ -3,13 +3,13 @@
 module load gpumem32gb cuda/13.0.2 cudnn/9.8.0.87-12 miniforge3
 
 environment_scripts=$(dirname "$0")
-scripts=$environment_scripts/..
-base=$scripts/..
+base=$environment_scripts/../..
+base=$(realpath $base)
 
 venvs=$base/venvs
 tools=$base/tools
 
-venv_name="default"
+venv_name="o_brien_et_al_2026"
 
 mkdir -p $venvs $tools/$venv_name
 
@@ -23,9 +23,13 @@ fi
 
 source activate $venvs/$venv_name
 
-# install multimodalhugs (latest)
+# install multimodalhugs, pinned to exact commit for reproducibility
+# Using bricksdont fork, branch cherry-pick-catherine-one-person-per-frame,
+# which adds support for multi-person pose files (e.g. openpose sometimes detects >1 person).
 
-git clone https://github.com/GerrySant/multimodalhugs.git $tools/$venv_name/multimodalhugs
+git clone https://github.com/bricksdont/multimodalhugs.git $tools/$venv_name/multimodalhugs
+
+(cd $tools/$venv_name/multimodalhugs && git checkout "881f4b7121577f9e4a8ea276c30f9499d81f111b")
 
 (cd $tools/$venv_name/multimodalhugs && pip install .)
 
@@ -33,10 +37,13 @@ git clone https://github.com/GerrySant/multimodalhugs.git $tools/$venv_name/mult
 
 pip install git+https://github.com/sign-language-processing/datasets.git
 
-# pose-format fork with support for additional pose types (alphapose, openpose, smplest_x, etc.)
+# pose-format fork, pinned to exact commit for reproducibility
 # Cloned without submodules to avoid SSH auth failure on the pose-pipelines submodule.
 
-git clone --no-recurse-submodules -b multiple_support https://github.com/GerrySant/pose.git $tools/$venv_name/pose-format
+git clone --no-recurse-submodules https://github.com/GerrySant/pose.git $tools/$venv_name/pose-format
+
+(cd $tools/$venv_name/pose-format && git checkout "c38880312aaefdf07298dce1548ad619734420ba")
+
 pip install $tools/$venv_name/pose-format/src/python
 
 # TF keras, because keras 3 is not supported in Transformers

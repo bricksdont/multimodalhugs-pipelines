@@ -8,7 +8,7 @@ SLURM-based pipeline for pose-to-text sign language translation using the [multi
 
 ```
 scripts/
-  environment/   install.sh, create_env.sh
+  environment/   install.sh
   running/       run_basic.sh, run_generic.sh (SLURM orchestrator), sbatch_bare.sh
   preprocessing/ preprocess.sh + preprocess.py
   training/      train.sh + create_config.py
@@ -56,7 +56,7 @@ Each step script (`preprocess.sh`, `train.sh`, `translate.sh`) follows the same 
 - `set -euo pipefail` at the top — required so SLURM `afterok` dependencies fail correctly when a step errors
 - Positional args only (no named flags), in a fixed documented order
 - Skip logic at the top: if output already exists, exits 0 immediately
-- Activates the venv via `source activate $venvs/huggingface`
+- Activates the venv via `source activate $venvs/${venv:-default}`
 - Times execution with `$SECONDS`
 
 ## Pose features
@@ -67,7 +67,8 @@ Each step script (`preprocess.sh`, `train.sh`, `translate.sh`) follows the same 
 
 ## multimodalhugs dependency
 
-- Pinned to commit `5201c80f27aa70c460e8297a799dc5daccbd1b3b` in both `install.sh` and `ci.yml` to avoid unintentional breakage
+- The default `install.sh` installs the latest version; experiment-specific install scripts (e.g. `experiments/o_brien_et_al_2026/install.sh`) pin to an exact commit for reproducibility
+- Pinned to commit `5201c80f27aa70c460e8297a799dc5daccbd1b3b` in `ci.yml` and experiment install scripts
 - Exposes CLI tools: `multimodalhugs-setup`, `multimodalhugs-train`, `multimodalhugs-generate`
 - Set `HF_HUB_DISABLE_XET=1` before calling these (see [issue #50](https://github.com/GerrySant/multimodalhugs/issues/50))
 - Transformers 4.44 warns about `reduce_holistic_poses` not being in `valid_kwargs` — this is cosmetic; the processor still applies the reduction correctly
@@ -78,6 +79,9 @@ Each step script (`preprocess.sh`, `train.sh`, `translate.sh`) follows the same 
 - `opencv-python` must be replaced with `opencv-python-headless` because OpenGL is unavailable on the cluster; `install.sh` detects the installed version and reinstalls the headless variant
 - `importlib_resources` must be installed explicitly — it is a missing transitive dependency of `etils`/`tensorflow_datasets` in Python 3.11
 - mediapipe is **not** installed; fake pose generation in `preprocess.py` hardcodes MediaPipe holistic component definitions directly to avoid the mediapipe/protobuf/tensorflow version conflict
+- TF/TFDS are not used for Phoenix text labels; labels are downloaded directly from `ANNOTATIONS_URL` in `preprocess.py` as a plain 800 KB tar.gz, parsed with the `csv` module — no protobuf pin needed
+- `pose-format` is installed from the `GerrySant/pose` fork (`multiple_support` branch) to support non-mediapipe pose types; the default install tracks the branch tip, experiment installs pin to an exact commit
+- Each experiment that requires a reproducible environment has its own `install.sh` under `experiments/<name>/` which creates `venvs/<name>/` and clones repos into `tools/<name>/`; `run_generic.sh` picks up the venv via the `$venv` variable (default: `default`)
 
 ## CI
 

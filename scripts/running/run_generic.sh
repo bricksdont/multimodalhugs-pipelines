@@ -17,6 +17,9 @@
 : "${fp16:="true"}"
 : "${seed:=42}"
 : "${gpu_type:="v100"}"
+: "${venv:="default"}"
+
+export venv
 
 ################################
 
@@ -52,7 +55,7 @@ log_vars() {
 }
 
 log_vars base dry_run dataset feature_type pose_type model_name learning_rate gradient_accumulation_steps \
-    warmup_steps batch_size label_smoothing_factor dataloader_num_workers fp16 seed gpu_type
+    warmup_steps batch_size label_smoothing_factor dataloader_num_workers fp16 seed gpu_type venv
 
 echo "##############################################" | tee -a $logs_sub/MAIN
 
@@ -66,11 +69,11 @@ elif [[ $gpu_type == "h100" ]]; then
   gpu_parameters="--gpus=H100:1"
 else
   # avoid L4 nodes with too little memory
-  gpu_parameters="--gpus=1 --constraint=GPUMEM32GB"
+  gpu_parameters="--gpus=1 --constraint=GPUMEM80GB|GPUMEM96GB|GPUMEM140GB"
 fi
 
 SLURM_ARGS_GENERIC="--cpus-per-task=8 --time=24:00:00 --mem=16G"
-SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
+SLURM_ARGS_TRAIN="--time=24:00:00 $gpu_parameters --cpus-per-task 8 --mem 32g"
 SLURM_ARGS_TRANSLATE="--time=12:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
 SLURM_ARGS_EVALUATE="--time=01:00:00 $gpu_parameters --cpus-per-task 8 --mem 16g"
 

@@ -1,6 +1,9 @@
 #! /bin/bash
 
-base="/shares/sigma.ebling.cl.uzh/mathmu/multimodalhugs-examples"
+summary_scripts=$(dirname "$0")
+scripts=$summary_scripts/..
+base=$scripts/..
+base=$(realpath $base)
 
 venvs=$base/venvs
 scripts=$base/scripts
@@ -9,8 +12,6 @@ evaluations=$base/evaluations
 summaries=$base/summaries
 
 mkdir -p $summaries
-
-# python3 $scripts/summaries/summarize.py --eval-folder $evaluations > $summaries/summary.tsv
 
 grep "\"score\"" $evaluations/*/test_score.bleu | awk -F'"score": ' '{print $2 "\t" $0}' | sort -k1,1nr | cut -f2- \
     > $summaries/summary.txt

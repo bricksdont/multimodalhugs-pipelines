@@ -1,7 +1,6 @@
 import argparse
-import torch
-
-import multimodalhugs.models
+import torch  # noqa: F401
+import multimodalhugs.models  # noqa: F401
 
 from transformers import AutoModelForSeq2SeqLM
 
@@ -51,6 +50,7 @@ def check_checkpoints_zero_identical(checkpoint_1, checkpoint_2):
     else:
         print("❌ at least one parameter differed")
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Debug HF models")
     parser.add_argument("--checkpoint-1", type=str, help="Path to model checkpoint")
@@ -58,8 +58,8 @@ def parse_arguments():
 
     return parser.parse_args()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     args = parse_arguments()
 
     check_checkpoints_zero_identical(args.checkpoint_1, args.checkpoint_2)

@@ -16,7 +16,7 @@ model:
   multimodal_mapper_dropout: 0.1                  # Dropout probability for the Multimodal Mapper to prevent overfitting.
   backbone_type: {backbone_type}                  # Identifier for the pretrained backbone (e.g., "m2m_100").
   pretrained_backbone: {pretrained_backbone}      # Weights or checkpoint identifier for the pretrained backbone.
-  feat_dim: 534                                   # Dimension of the Feature Extractor output. If features are extracted off-line, the dimentionality of features.
+  feat_dim: {feat_dim}                             # Dimension of the Feature Extractor output. If features are extracted off-line, the dimensionality of features.
 
 training:
   run_name: {run_name}                             # The name or identifier of the model configuration.
@@ -105,57 +105,147 @@ def fill_template(args: argparse.Namespace) -> str:
         dataloader_num_workers=args.dataloader_num_workers,
         fp16=args.fp16,
         seed=args.seed,
+        feat_dim=args.feat_dim,
     )
+
 
 # Parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Create YAML config file.")
-    parser.add_argument("--run-name", type=str, help="The name or identifier of the model configuration.")
-    parser.add_argument("--config-dir", type=str,
-                        help="Path where the output config (and possibly new vocabulary file) "
-                             "should be saved.")
-    parser.add_argument("--train-metadata-file", type=str, help="Train TSV metadata file path.")
-    parser.add_argument("--validation-metadata-file", type=str, help="Validation TSV metadata file path.")
-    parser.add_argument("--test-metadata-file", type=str, help="Test TSV metadata file path.")
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        help="The name or identifier of the model configuration.",
+    )
+    parser.add_argument(
+        "--config-dir",
+        type=str,
+        help="Path where the output config (and possibly new vocabulary file) "
+        "should be saved.",
+    )
+    parser.add_argument(
+        "--train-metadata-file", type=str, help="Train TSV metadata file path."
+    )
+    parser.add_argument(
+        "--validation-metadata-file",
+        type=str,
+        help="Validation TSV metadata file path.",
+    )
+    parser.add_argument(
+        "--test-metadata-file", type=str, help="Test TSV metadata file path."
+    )
 
-    parser.add_argument("--text-tokenizer-path", type=str, help="Text tokenizer identifier (default: facebook/m2m100_418M).",
-                        default="facebook/m2m100_418M", required = False)
-    parser.add_argument("--new-vocabulary", type=str, nargs="+", help="Strings to be added to tokenizer (default: None).",
-                        default=None, required=False)
+    parser.add_argument(
+        "--text-tokenizer-path",
+        type=str,
+        help="Text tokenizer identifier (default: facebook/m2m100_418M).",
+        default="facebook/m2m100_418M",
+        required=False,
+    )
+    parser.add_argument(
+        "--new-vocabulary",
+        type=str,
+        nargs="+",
+        help="Strings to be added to tokenizer (default: None).",
+        default=None,
+        required=False,
+    )
 
-    parser.add_argument("--backbone-type", type=str, help="Identifier for the pretrained backbone (default: m2m_100).",
-                        default="m2m_100", required=False)
-    parser.add_argument("--pretrained-backbone", type=str, help="Weights or checkpoint identifier for the pretrained "
-                                                                "backbone. (default: facebook/m2m100_418M).",
-                        default="facebook/m2m100_418M", required=False)
+    parser.add_argument(
+        "--backbone-type",
+        type=str,
+        help="Identifier for the pretrained backbone (default: m2m_100).",
+        default="m2m_100",
+        required=False,
+    )
+    parser.add_argument(
+        "--pretrained-backbone",
+        type=str,
+        help="Weights or checkpoint identifier for the pretrained "
+        "backbone. (default: facebook/m2m100_418M).",
+        default="facebook/m2m100_418M",
+        required=False,
+    )
 
-    parser.add_argument("--reduce-holistic-poses", action="store_true", default=False,
-                        help="Reduce holistic poses (default: False).", required=False)
+    parser.add_argument(
+        "--reduce-holistic-poses",
+        action="store_true",
+        default=False,
+        help="Reduce holistic poses (default: False).",
+        required=False,
+    )
 
-    parser.add_argument("--learning-rate", type=float, help="The initial learning rate for AdamW optimizer (default: 5e-05).",
-                        default=5e-05, required=False)
-    parser.add_argument("--gradient-accumulation-steps", type=int,
-                        help="Number of updates steps to accumulate the gradients for, before performing a backward/update pass.",
-                        default=1, required=False)
-    parser.add_argument("--warmup-steps", type=int, help="Number of steps used for a linear warmup from 0 to learning_rate.",
-                        default=0, required=False)
-    parser.add_argument("--seed", type=int,
-                        help="Random seed that will be set at the beginning of training.",
-                        default=42, required=False)
-    parser.add_argument("--batch-size", type=int,
-                        help="The batch size per GPU/XPU/TPU/MPS/NPU core/CPU for training / evaluation.",
-                        default=8, required=False)
-    parser.add_argument("--label-smoothing-factor", type=float,
-                        help="The label smoothing factor to use. Zero means no label smoothing.",
-                        default=0.0, required=False)
-    parser.add_argument("--dataloader-num-workers", type=int,
-                        help="Number of subprocesses to use for data loading (PyTorch only). 0 means that the data will be loaded in the main process.",
-                        default=2, required=False)
-    parser.add_argument("--fp16", action="store_true", default=False,
-                        help="Whether to use fp16 16-bit (mixed) precision training instead of 32-bit training.", required=False)
+    parser.add_argument(
+        "--learning-rate",
+        type=float,
+        help="The initial learning rate for AdamW optimizer (default: 5e-05).",
+        default=5e-05,
+        required=False,
+    )
+    parser.add_argument(
+        "--gradient-accumulation-steps",
+        type=int,
+        help="Number of updates steps to accumulate the gradients for, before performing a backward/update pass.",
+        default=1,
+        required=False,
+    )
+    parser.add_argument(
+        "--warmup-steps",
+        type=int,
+        help="Number of steps used for a linear warmup from 0 to learning_rate.",
+        default=0,
+        required=False,
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Random seed that will be set at the beginning of training.",
+        default=42,
+        required=False,
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        help="The batch size per GPU/XPU/TPU/MPS/NPU core/CPU for training / evaluation.",
+        default=8,
+        required=False,
+    )
+    parser.add_argument(
+        "--label-smoothing-factor",
+        type=float,
+        help="The label smoothing factor to use. Zero means no label smoothing.",
+        default=0.0,
+        required=False,
+    )
+    parser.add_argument(
+        "--dataloader-num-workers",
+        type=int,
+        help="Number of subprocesses to use for data loading (PyTorch only). 0 means that the data will be loaded in the main process.",
+        default=2,
+        required=False,
+    )
+    parser.add_argument(
+        "--fp16",
+        action="store_true",
+        default=False,
+        help="Whether to use fp16 16-bit (mixed) precision training instead of 32-bit training.",
+        required=False,
+    )
 
-    parser.add_argument("--dry-run", action="store_true", default=False,
-                        help="Train for a small number of steps.", required=False)
+    parser.add_argument(
+        "--feat-dim",
+        type=int,
+        default=534,
+        help="Feature dimension of the pose encoder output (default: 534 for mediapipe).",
+        required=False,
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Train for a small number of steps.",
+        required=False,
+    )
     return parser.parse_args()
 
 

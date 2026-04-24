@@ -34,9 +34,9 @@ which activate
 # perhaps not necessary anymore
 # eval "$(conda shell.bash hook)"
 
-echo "Executing: source activate $venvs/huggingface"
+echo "Executing: source activate $venvs/${venv:-default}"
 
-source activate $venvs/huggingface
+source activate $venvs/${venv:-default}
 
 echo "Python after activating:"
 which python
